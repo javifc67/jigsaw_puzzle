@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import "./../assets/scss/MainScreen.scss";
 import { useContext } from "react";
 import { GlobalContext } from "./GlobalContext";
+import PiecesPool from "./PiecesPool";
+import PuzzleBoard from "./PuzzleBoard";
 
 export default function MainScreen({ config, sendSolution }) {
   const { I18n } = useContext(GlobalContext);
@@ -130,73 +132,32 @@ export default function MainScreen({ config, sendSolution }) {
     );
   };
 
-  const getBackgroundStyle = (piece) => {
-    const imgUrl = piece.currentSide === 1 ? config.image1 : config.image2;
-    const row = Math.floor(piece.correctPosition / cols);
-    const col = piece.correctPosition % cols;
-
-    const xPos = cols > 1 ? (col * 100) / (cols - 1) : 0;
-    const yPos = rows > 1 ? (row * 100) / (rows - 1) : 0;
-
-    return {
-      backgroundImage: `url(${imgUrl})`,
-      backgroundPosition: `${xPos}% ${yPos}%`,
-      backgroundSize: `${cols * 100}% ${rows * 100}%`,
-    };
-  };
-
   return (
     <div id="MainScreen" className="screen_wrapper">
-      <div
-        className="pieces-pool"
+      <PiecesPool
+        pieces={pieces}
+        config={config}
+        rows={rows}
+        cols={cols}
         onDragOver={handleDragOver}
         onDrop={handleDropToContainer}
-      >
-        <h3>{I18n.getTrans("i.pieces")}</h3>
-        <div className="pieces-list">
-          {pieces.filter(p => !p.isPlaced).map((piece) => (
-            <div
-              key={piece.id}
-              className="puzzle-piece"
-              draggable
-              onDragStart={(e) => handleDragStart(e, piece.id)}
-              onClick={() => togglePieceSide(piece.id)}
-              style={getBackgroundStyle(piece)}
-            />
-          ))}
-        </div>
-      </div>
+        onDragStart={handleDragStart}
+        onPieceClick={togglePieceSide}
+        I18n={I18n}
+      />
       <div className="puzzle-container">
-
-        <div className="puzzle-board">
-          <h3>{I18n.getTrans("i.board")}</h3>
-          <div className="grid" style={{
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gridTemplateRows: `repeat(${rows}, 1fr)`
-          }}>
-            {gridState.map((pieceId, index) => {
-              const piece = pieces.find(p => p.id === pieceId);
-              return (
-                <div
-                  key={index}
-                  className="grid-cell"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                >
-                  {piece && (
-                    <div
-                      className="puzzle-piece"
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, piece.id)}
-                      onClick={() => togglePieceSide(piece.id)}
-                      style={getBackgroundStyle(piece)}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <PuzzleBoard
+          gridState={gridState}
+          pieces={pieces}
+          rows={rows}
+          cols={cols}
+          config={config}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onDragStart={handleDragStart}
+          onPieceClick={togglePieceSide}
+          I18n={I18n}
+        />
       </div>
     </div>
   );
