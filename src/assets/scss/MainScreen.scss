@@ -86,6 +86,16 @@
     &:active {
       cursor: grabbing;
     }
+
+    &.locked {
+      cursor: default;
+      &:hover {
+        transform: none;
+      }
+      &:active {
+        cursor: default;
+      }
+    }
   }
 
   // Adjust piece size when in grid to fill the cell
