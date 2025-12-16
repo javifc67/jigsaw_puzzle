@@ -11,6 +11,7 @@ export default function PuzzleBoard({
     onDragStart,
     onPieceClick,
     I18n,
+    isLocked,
 }) {
     return (
         <div className="puzzle-board">
@@ -39,6 +40,7 @@ export default function PuzzleBoard({
                                     cols={cols}
                                     onDragStart={onDragStart}
                                     onPieceClick={onPieceClick}
+                                    isLocked={isLocked}
                                 />
                             )}
                         </div>

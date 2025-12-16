@@ -169,7 +169,7 @@ export default function App() {
         : {})}
     >
       <div className={`main-background ${result && result.success === true ? "solved" : ""}`}>
-        {!loading && <MainScreen config={appSettings} sendSolution={checkResult} />}
+        {!loading && <MainScreen config={appSettings} sendSolution={checkResult} result={result} />}
       </div>
     </div>
   );

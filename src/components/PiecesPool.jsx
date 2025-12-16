@@ -10,6 +10,7 @@ export default function PiecesPool({
     onDragStart,
     onPieceClick,
     I18n,
+    isLocked,
 }) {
     return (
         <div
@@ -30,6 +31,7 @@ export default function PiecesPool({
                             cols={cols}
                             onDragStart={onDragStart}
                             onPieceClick={onPieceClick}
+                            isLocked={isLocked}
                         />
                     ))}
             </div>

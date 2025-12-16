@@ -5,7 +5,7 @@ import { GlobalContext } from "./GlobalContext";
 import PiecesPool from "./PiecesPool";
 import PuzzleBoard from "./PuzzleBoard";
 
-export default function MainScreen({ config, sendSolution }) {
+export default function MainScreen({ config, sendSolution, result }) {
   const { I18n } = useContext(GlobalContext);
   const [pieces, setPieces] = useState([]);
   const [gridState, setGridState] = useState([]);
@@ -21,6 +21,12 @@ export default function MainScreen({ config, sendSolution }) {
     initializePuzzle(r, c);
 
   }, [config]);
+
+  useEffect(() => {
+    if (result && result.success === true) {
+
+    }
+  }, [result]);
 
   useEffect(() => {
     if (gridState.length > 0 && gridState.every((cell) => cell !== null)) {
@@ -59,12 +65,16 @@ export default function MainScreen({ config, sendSolution }) {
     setGridState(Array(totalPieces).fill(null));
   };
 
+  const isLocked = result && result.success === true;
+
   const handleDragStart = (e, pieceId) => {
+    if (isLocked) return;
     e.dataTransfer.setData("pieceId", pieceId);
   };
 
   const handleDrop = (e, index) => {
     e.preventDefault();
+    if (isLocked) return;
     const incomingPieceId = parseInt(e.dataTransfer.getData("pieceId"));
     if (isNaN(incomingPieceId)) return;
 
@@ -101,6 +111,7 @@ export default function MainScreen({ config, sendSolution }) {
 
   const handleDropToContainer = (e) => {
     e.preventDefault();
+    if (isLocked) return;
     const pieceId = parseInt(e.dataTransfer.getData("pieceId"));
     if (isNaN(pieceId)) return;
 
@@ -117,10 +128,12 @@ export default function MainScreen({ config, sendSolution }) {
   };
 
   const handleDragOver = (e) => {
+    if (isLocked) return;
     e.preventDefault();
   };
 
   const togglePieceSide = (pieceId) => {
+    if (isLocked) return;
     setPieces((prev) =>
       prev.map((p) =>
         p.id === pieceId
@@ -142,6 +155,7 @@ export default function MainScreen({ config, sendSolution }) {
         onDragStart={handleDragStart}
         onPieceClick={togglePieceSide}
         I18n={I18n}
+        isLocked={isLocked}
       />
       <div className="puzzle-container">
         <PuzzleBoard
@@ -155,6 +169,7 @@ export default function MainScreen({ config, sendSolution }) {
           onDragStart={handleDragStart}
           onPieceClick={togglePieceSide}
           I18n={I18n}
+          isLocked={isLocked}
         />
       </div>
     </div>

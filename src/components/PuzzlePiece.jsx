@@ -1,5 +1,5 @@
 
-export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, onPieceClick }) {
+export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, onPieceClick, isLocked }) {
     const getBackgroundStyle = (piece) => {
         const imgUrl = piece.currentSide === 1 ? config.image1 : config.image2;
         const row = Math.floor(piece.correctPosition / cols);
@@ -12,15 +12,16 @@ export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, on
             backgroundImage: `url(${imgUrl})`,
             backgroundPosition: `${xPos}% ${yPos}%`,
             backgroundSize: `${cols * 100}% ${rows * 100}%`,
+            cursor: isLocked ? "default" : "grab",
         };
     };
 
     return (
         <div
-            className="puzzle-piece"
-            draggable
-            onDragStart={(e) => onDragStart(e, piece.id)}
-            onClick={() => onPieceClick(piece.id)}
+            className={`puzzle-piece ${isLocked ? "locked" : ""}`}
+            draggable={!isLocked}
+            onDragStart={(e) => !isLocked && onDragStart(e, piece.id)}
+            onClick={() => !isLocked && onPieceClick(piece.id)}
             style={getBackgroundStyle(piece)}
         />
     );
