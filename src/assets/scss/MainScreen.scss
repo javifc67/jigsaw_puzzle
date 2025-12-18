@@ -32,15 +32,15 @@
     background: rgba(0, 0, 0, 0.2);
     padding: 20px;
     border-radius: 10px;
-    overflow-y: auto;
+    overflow: hidden;
     height: 90vh;
     margin: 1vw;
+    position: relative;
 
     .pieces-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
+      position: relative;
+      width: 100%;
+      height: 100%;
     }
   }
 
@@ -74,6 +74,7 @@
     cursor: grab;
     transition: transform 0.2s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    outline: 1px solid rgb(0, 0, 0);
 
     &:hover {
       transform: scale(1.05);

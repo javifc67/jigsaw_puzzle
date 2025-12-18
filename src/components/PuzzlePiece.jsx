@@ -1,5 +1,5 @@
 
-export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, onPieceClick, isLocked }) {
+export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, onPieceClick, isLocked, style, onMouseEnter }) {
     const getBackgroundStyle = (piece) => {
         const imgUrl = piece.currentSide === 1 ? config.image1 : config.image2;
         const row = Math.floor(piece.correctPosition / cols);
@@ -22,7 +22,8 @@ export default function PuzzlePiece({ piece, config, rows, cols, onDragStart, on
             draggable={!isLocked}
             onDragStart={(e) => !isLocked && onDragStart(e, piece.id)}
             onClick={() => !isLocked && onPieceClick(piece.id)}
-            style={getBackgroundStyle(piece)}
+            onMouseEnter={onMouseEnter}
+            style={{ ...getBackgroundStyle(piece), ...style }}
         />
     );
 }
