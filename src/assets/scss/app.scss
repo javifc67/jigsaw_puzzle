@@ -24,7 +24,7 @@ div.screen_wrapper {
 }
 
 #global_wrapper {
-  background-color: #2a2a52;
+  background-color: #2c3e50
 }
 
 .main-background {
@@ -32,6 +32,9 @@ div.screen_wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .screen_wrapper {

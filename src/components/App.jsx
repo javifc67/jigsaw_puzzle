@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import "./../assets/scss/app.scss";
 
-import { DEFAULT_APP_SETTINGS, ESCAPP_CLIENT_SETTINGS } from "../constants/constants.jsx";
+import { DEFAULT_APP_SETTINGS, ESCAPP_CLIENT_SETTINGS, THEME_ASSETS } from "../constants/constants.jsx";
 import { GlobalContext } from "./GlobalContext.jsx";
 import MainScreen from "./MainScreen.jsx";
 
@@ -84,8 +84,11 @@ export default function App() {
       _appSettings.skin = DEFAULT_APP_SETTINGS.skin;
     }
 
+    let skinSettings = THEME_ASSETS[_appSettings.skin] || {};
+    let DEFAULT_APP_SETTINGS_SKIN = Utils.deepMerge(DEFAULT_APP_SETTINGS, skinSettings);
+
     // Merge _appSettings with DEFAULT_APP_SETTINGS_SKIN to obtain final app settings
-    _appSettings = Utils.deepMerge(DEFAULT_APP_SETTINGS, _appSettings);
+    _appSettings = Utils.deepMerge(DEFAULT_APP_SETTINGS_SKIN, _appSettings);
 
     //Init internacionalization module
     I18n.init(_appSettings);
@@ -158,18 +161,8 @@ export default function App() {
       id="global_wrapper"
       className={`${appSettings !== null && typeof appSettings.skin === "string" ? appSettings.skin.toLowerCase() : ""
         }`}
-      {...(appSettings !== null &&
-        typeof appSettings.background === "string" &&
-        typeof appSettings.backgroundSize === "string"
-        ? {
-          style: {
-            background: appSettings.background,
-            backgroundSize: appSettings.backgroundSize,
-          },
-        }
-        : {})}
     >
-      <div className={`main-background ${result && result.success === true ? "solved" : ""}`} style={{ opacity: loading ? 0 : 1 }}>
+      <div className={`main-background ${result && result.success === true ? "solved" : ""}`} style={{ opacity: loading ? 0 : 1, backgroundImage: appSettings?.backgroundImg && !loading ? `url(${appSettings.backgroundImg})` : "" }}>
         {!initialLoading && <MainScreen setLoading={setLoading} config={appSettings} sendSolution={checkResult} result={result} />}
       </div>
     </div>

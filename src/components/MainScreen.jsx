@@ -4,6 +4,7 @@ import { GlobalContext } from "./GlobalContext";
 import PiecesPool from "./PiecesPool";
 import PuzzleBoard from "./PuzzleBoard";
 import useSound from "../hooks/useSound";
+import { THEMES } from "../constants/constants";
 
 // Helper to generate ordered positions for pieces in the pool
 const assignInitialPositions = (pieces) => {
@@ -102,7 +103,13 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
   const maxZIndex = useRef(100);
 
   const isLocked = result && result.success === true;
+  const hasImages = config.skin !== THEMES.STANDARD;
 
+  const boardStyles = {
+    backdropFilter: hasImages ? "none" : "blur(5px)",
+    background: hasImages ? "none" : "rgba(255, 255, 255, 0.1)",
+    borderRadius: hasImages ? "none" : "10px",
+  };
   // Initialize config and slice images
   useEffect(() => {
     if (!config) return;
@@ -303,7 +310,7 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
         I18n={I18n}
         isLocked={isLocked}
       />
-      <div className="puzzle-container">
+      <div className="puzzle-container" style={boardStyles}>
         <PuzzleBoard
           gridState={gridState}
           pieces={pieces}
@@ -317,6 +324,7 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
           slicedImages={slicedImages}
           I18n={I18n}
           isLocked={isLocked}
+          hasImages={hasImages}
         />
       </div>
     </div>
