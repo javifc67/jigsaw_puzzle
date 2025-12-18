@@ -1,73 +1,109 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import "./../assets/scss/MainScreen.scss";
-import { useContext } from "react";
 import { GlobalContext } from "./GlobalContext";
 import PiecesPool from "./PiecesPool";
 import PuzzleBoard from "./PuzzleBoard";
 import useSound from "../hooks/useSound";
 
+// Helper to generate ordered positions for pieces in the pool
+const assignInitialPositions = (pieces) => {
+  // Grid configuration for the pool
+  const COLS = 2;
+  const ROWS = 6;
+  const SLOTS = COLS * ROWS;
+
+  return pieces.map((piece, i) => {
+    const slot = i % SLOTS;
+
+    const col = slot % COLS;
+    const row = Math.floor(slot / COLS);
+
+    // Piece width is roughly 45% of pool width
+    // Column 0 starts near 2%, Column 1 near 48%
+    let baseX = col === 0 ? 0.02 : 0.48;
+
+    // Rows spaced by ~14%
+    let baseY = row * 0.14;
+
+    // Add small random jitter so stacked pieces are visible
+    const jitterX = (Math.random() - 0.5) * 0.08;
+    const jitterY = (Math.random() - 0.5) * 0.08;
+
+    let poolX = baseX + jitterX;
+    let poolY = baseY + jitterY;
+
+    // Clamp to safe visible area (approx 0 to 55% width, 0 to 80% height)
+    poolX = Math.max(0, Math.min(0.55, poolX));
+    poolY = Math.max(0, Math.min(0.80, poolY));
+
+    return { ...piece, poolX, poolY, zIndex: 1 };
+  });
+};
+
+// Helper to slice images into tiles for security
+const sliceImage = (src, r, c) => {
+  return new Promise((resolve) => {
+    if (!src) {
+      resolve([]);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = src;
+    img.onload = () => {
+      const pieceWidth = img.width / c;
+      const pieceHeight = img.height / r;
+      const pieces = [];
+
+      try {
+        for (let row = 0; row < r; row++) {
+          for (let col = 0; col < c; col++) {
+            const canvas = document.createElement("canvas");
+            canvas.width = pieceWidth;
+            canvas.height = pieceHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(
+              img,
+              col * pieceWidth,
+              row * pieceHeight,
+              pieceWidth,
+              pieceHeight,
+              0,
+              0,
+              pieceWidth,
+              pieceHeight
+            );
+            pieces.push(canvas.toDataURL());
+          }
+        }
+      } catch (e) {
+        console.error("Error slicing image (likely CORS):", src, e);
+        resolve([]);
+        return;
+      }
+      resolve(pieces);
+    };
+    img.onerror = (err) => {
+      console.error("Error loading image for slicing:", src, err);
+      resolve([]);
+    };
+  });
+};
+
 export default function MainScreen({ config, sendSolution, result, setLoading }) {
   const { I18n } = useContext(GlobalContext);
+  const winSound = useSound(config.winAudio);
+
   const [pieces, setPieces] = useState([]);
   const [gridState, setGridState] = useState([]);
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
   const [slicedImages, setSlicedImages] = useState({ side1: [], side2: [] });
   const maxZIndex = useRef(100);
-  const winSound = useSound(config.winAudio);
 
-  //the images are cut to make it difficult to see the image so easily
-  const sliceImage = (src, r, c) => {
-    return new Promise((resolve) => {
-      if (!src) {
-        resolve([]);
-        return;
-      }
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = src;
-      img.onload = () => {
-        const pieceWidth = img.width / c;
-        const pieceHeight = img.height / r;
-        const pieces = [];
+  const isLocked = result && result.success === true;
 
-        try {
-          for (let row = 0; row < r; row++) {
-            for (let col = 0; col < c; col++) {
-              const canvas = document.createElement("canvas");
-              canvas.width = pieceWidth;
-              canvas.height = pieceHeight;
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(
-                img,
-                col * pieceWidth,
-                row * pieceHeight,
-                pieceWidth,
-                pieceHeight,
-                0,
-                0,
-                pieceWidth,
-                pieceHeight
-              );
-              pieces.push(canvas.toDataURL());
-            }
-          }
-        } catch (e) {
-          // If CORS fails, we might return empty array or handle fallback.
-
-          console.error("Error slicing image (likely CORS):", src, e);
-          resolve([]);
-          return;
-        }
-        resolve(pieces);
-      };
-      img.onerror = (err) => {
-        console.error("Error loading image for slicing:", src, err);
-        resolve([]);
-      };
-    });
-  };
-
+  // Initialize config and slice images
   useEffect(() => {
     if (!config) return;
     const r = config.rows || 3;
@@ -92,6 +128,7 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
     }
   }, [result]);
 
+  // Check Solution
   useEffect(() => {
     if (gridState.length > 0 && gridState.every((cell) => cell !== null)) {
       const orderedPieces = gridState.map((pieceId) =>
@@ -108,39 +145,7 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
     }
   }, [gridState, pieces]);
 
-
-  const assignInitialPositions = (pieces) => {
-    // Grid configuration for the pool
-    const COLS = 2;
-    const ROWS = 6;
-    const SLOTS = COLS * ROWS;
-
-    return pieces.map((piece, i) => {
-      const slot = i % SLOTS;
-
-      const col = slot % COLS;
-      const row = Math.floor(slot / COLS);
-
-      // Piece width is roughly 45% of pool width Column 0 starts near 2%, Column 1 near 48%
-      let baseX = col === 0 ? 0.02 : 0.48;
-
-      // Rows spaced by ~14%
-      let baseY = row * 0.14;
-
-      // Add small random jitter so stacked pieces are visible
-      const jitterX = (Math.random() - 0.5) * 0.08;
-      const jitterY = (Math.random() - 0.5) * 0.08;
-
-      let poolX = baseX + jitterX;
-      let poolY = baseY + jitterY;
-
-      // Clamp to safe visible area (approx 0 to 55% width, 0 to 80% height)
-      poolX = Math.max(0, Math.min(0.55, poolX));
-      poolY = Math.max(0, Math.min(0.80, poolY));
-
-      return { ...piece, poolX, poolY, zIndex: 1 };
-    });
-  };
+  // --- Logic helpers ---
 
   const initializePuzzle = (r, c) => {
     const totalPieces = r * c;
@@ -167,10 +172,8 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
 
     setPieces(newPieces);
     setGridState(Array(totalPieces).fill(null));
-    setLoading(false)
+    if (setLoading) setLoading(false);
   };
-
-  const isLocked = result && result.success === true;
 
   const handlePieceHover = (pieceId) => {
     if (isLocked) return;
@@ -183,6 +186,8 @@ export default function MainScreen({ config, sendSolution, result, setLoading })
       return prev.map(p => p.id === pieceId ? { ...p, zIndex: maxZIndex.current } : p);
     });
   };
+
+  // --- Event Handlers ---
 
   const handleDragStart = (e, pieceId) => {
     if (isLocked) return;
